@@ -1,0 +1,37 @@
+#cloud-config
+
+packages:
+ - epel-release
+
+repo_update: true
+
+repo_upgrade: all
+
+runcmd:
+ - "apt install -y xdg-utils python3-pip libnss3-tools"
+ - "tmux new-session -d -s mySession -n myWindow && sudo tmux send-keys -t mySession:myWindow \"fastdd\" Enter"
+ - "sed -i 's/1/0/g' /etc/apt/apt.conf.d/20auto-upgrades"
+ - "apt -qq -y update"
+ - "apt -qq install -y firefox"
+ - "snap install gedit"
+ - "curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl"
+ - "chmod +x ./kubectl"
+ - "mv ./kubectl /usr/local/bin/kubectl"
+ - "echo 'source <(kubectl completion bash)' >>/home/ubuntu/.bashrc"
+ - "bash -c 'kubectl completion bash >/etc/bash_completion.d/kubectl'"
+ - "echo 'alias k=kubectl' >>/home/ubuntu/.bashrc"
+ - "echo 'complete -F __start_kubectl k' >>/home/ubuntu/.bashrc"
+ - "curl -L0 https://releases.hashicorp.com/terraform/0.12.24/terraform_0.12.24_linux_amd64.zip > terraform_0.12.24_linux_amd64.zip"
+ - "apt install -y unzip && unzip terraform_0.12.24_linux_amd64.zip"
+ - "chmod a+x terraform"
+ - "mv terraform /usr/local/bin/"
+ - "rm terraform_0.12.24_linux_amd64.zip"
+ - "[ -d /home/ubuntu/Desktop ] || mkdir /home/ubuntu/Desktop"
+ - "[ -d /home/ubuntu/.config ] || mkdir /home/ubuntu/.config"
+ - "chown -R ubuntu:ubuntu /home/ubuntu/"
+ - "sudo -H pip3 install hpecp"
+ - "echo 'source <(hpecp autocomplete bash)' >>/home/ubuntu/.bashrc"
+ - "apt install -y tasksel xrdp"
+ - "tasksel install ubuntu-mate-core"
+ - "sudo -u ubuntu ln -s /usr/bin/mate-session /home/ubuntu/.xsession"
+ - "systemctl enable --now xrdp"
