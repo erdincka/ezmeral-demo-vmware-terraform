@@ -1,70 +1,54 @@
-# Controller Public IP
-resource "azurerm_public_ip" "controllerpip" {
-    count = var.create_eip_controller ? 1 : 0
-    name                         = "controller-pip"
-    location                     = azurerm_resource_group.resourcegroup.location
-    resource_group_name          = azurerm_resource_group.resourcegroup.name
-    allocation_method            = "Dynamic"
-    domain_name_label            = "ctr-${var.project_id}"
-}
-
-# Controller NIC
-resource "azurerm_network_interface" "controllernic" {
-    name                        = "controller-nic"
-    location                    = azurerm_resource_group.resourcegroup.location
-    resource_group_name         = azurerm_resource_group.resourcegroup.name
-    ip_configuration {
-        name                          = "controller-ip"
-        subnet_id                     = azurerm_subnet.internal.id
-        private_ip_address_allocation = "Dynamic"
-        public_ip_address_id          = var.create_eip_controller ? azurerm_public_ip.controllerpip[0].id : null
-    }
-}
-
 # Controller VM
-resource "azurerm_linux_virtual_machine" "controller" {
-    name                  = "controller"
-    location              = azurerm_resource_group.resourcegroup.location
-    resource_group_name   = azurerm_resource_group.resourcegroup.name
-    network_interface_ids = [azurerm_network_interface.controllernic.id]
-    size                  = var.ctr_instance_type
-    admin_username        = var.user
-    custom_data           = base64encode(file(pathexpand(var.cloud_init_file)))
-    admin_ssh_key {
-        username = var.user
-        public_key = file(pathexpand(var.ssh_pub_key_path))
+resource "vsphere_virtual_machine" "controller" {
+  name                  = "controller"
+  resource_pool_id      = data.vsphere_resource_pool.pool.id
+  # custom_data           = base64encode(file(pathexpand(var.cloud_init_file)))
+  datastore_id          = data.vsphere_datastore.datastore.id
+  num_cpus              = var.ctr_instance_cpu
+  memory                = var.ctr_instance_memory
+  guest_id              = data.vsphere_virtual_machine.template.guest_id
+  scsi_type             = data.vsphere_virtual_machine.template.scsi_type
+  network_interface {
+    network_id = data.vsphere_network.network.id
+  }
+  disk {
+      label               = "controller-os-disk"
+      size                = "512"
+      thin_provisioned    = true
+  }
+  # clone from template
+  clone {
+    template_uuid = data.vsphere_virtual_machine.template.id
+    customize {
+      linux_options {
+        host_name = "controller"
+        domain = var.domain
+        time_zone = var.timezone
+      }
+      network_interface { } // use dhcp
     }
-    os_disk {
-        name              = "controller-os-disk"
-        caching           = "ReadWrite"
-        disk_size_gb      = "512"
-        storage_account_type = "Standard_LRS"
+  }
+  /********** Data Disks **********/
+  disk {
+    label               = "controller-disk1"
+    size                = 512
+    unit_number         = 1
+  }
+  disk {
+    label               = "controller-disk2"
+    size                = 512
+    unit_number         = 2
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "sudo yum install -y -q cloud-utils-growpart",
+      "sudo growpart /dev/sda 2",
+      "sudo xfs_growfs /"
+    ]
+    connection {
+      host     = self.default_ip_address
+      user     = var.user
+      private_key = file(var.ssh_prv_key_path)
     }
-    source_image_reference {
-        publisher = "OpenLogic"
-        offer     = "CentOS"
-        sku       = "7_8"
-        version   = "latest"
-    }
-    boot_diagnostics {
-      storage_account_uri = azurerm_storage_account.storageaccount.primary_blob_endpoint
-    }
-}
-
-/********** Data Disks **********/
-resource "azurerm_managed_disk" "ctrdatadisk" {
-  count                = 2
-  name                 = "controller-disk${count.index + 1}"
-  location             = azurerm_resource_group.resourcegroup.location
-  resource_group_name  = azurerm_resource_group.resourcegroup.name
-  create_option        = "Empty"
-  disk_size_gb         = 512
-  storage_account_type = "Standard_LRS"
-}
-resource "azurerm_virtual_machine_data_disk_attachment" "ctrdatadisk-attach" {
-  count              = 2
-  virtual_machine_id = azurerm_linux_virtual_machine.controller.id
-  managed_disk_id    = azurerm_managed_disk.ctrdatadisk.*.id[count.index]
-  lun                = count.index + 1
-  caching            = "ReadWrite"
+  }
 }

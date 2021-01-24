@@ -95,67 +95,53 @@ output "create_eks_cluster" {
 
 //// Gateway
 output "gateway_instance_id" {
-    value = azurerm_linux_virtual_machine.gateway.id
+    value = vsphere_virtual_machine.gateway.id
 }
 output "gateway_private_ip" {
-    value = azurerm_network_interface.gatewaynic.private_ip_address
-}
-data "azurerm_public_ip" "gtw_public_ip" {
-  name                = azurerm_public_ip.gatewaypip.name
-  resource_group_name = azurerm_linux_virtual_machine.gateway.resource_group_name
+    value = vsphere_virtual_machine.gateway.default_ip_address
 }
 output "gateway_public_ip" {
-  value = var.create_eip_gateway ? data.azurerm_public_ip.gtw_public_ip.ip_address : "no public ip for gateway"
+  value = var.create_eip_gateway ? vsphere_virtual_machine.gateway.default_ip_address : "no public ip for gateway"
 }
 output "gateway_public_dns" {
-    value = var.create_eip_gateway ? "${var.project_id}.${var.region}.cloudapp.azure.com" : "no public dns for gateway"
+    value = var.create_eip_gateway ? "${var.project_id}.${var.domain}" : "no public dns for gateway"
 }
 output "gateway_private_dns" {
-  value = "${var.project_id}.internal.cloudapp.net"
+  value = "${var.project_id}.${var.domain}"
 }
 
 //// Controller
 output "controller_instance_id" {
-  value = azurerm_linux_virtual_machine.controller.id
+  value = vsphere_virtual_machine.controller.id
 }
 output "controller_private_ip" {
-    value = azurerm_network_interface.controllernic.private_ip_address
+    value = vsphere_virtual_machine.controller.default_ip_address
 }
 output "controller_private_dns" {
-  value = azurerm_network_interface.controllernic.internal_domain_name_suffix
-}
-data "azurerm_public_ip" "ctr_public_ip" {
-  ### Workaround if create_eip_controller is false (return gateway public ip)
-  name                = var.create_eip_controller ? azurerm_public_ip.controllerpip[0].name : azurerm_public_ip.gatewaypip.name
-  resource_group_name = azurerm_linux_virtual_machine.controller.resource_group_name
+  value = vsphere_virtual_machine.controller.name
 }
 output "controller_public_ip" {
-  value = data.azurerm_public_ip.ctr_public_ip.ip_address
+  value = vsphere_virtual_machine.controller.default_ip_address
 }
-output "controller_public_url" {
-  value = var.create_eip_controller ? "https://${data.azurerm_public_ip.ctr_public_ip.fqdn}" : "no public ip for controller"
-}
+# output "controller_public_url" {
+#   value = var.create_eip_controller ? "https://${data.azurerm_public_ip.ctr_public_ip.fqdn}" : "no public ip for controller"
+# }
 output "controller_public_dns" {
-  value = var.create_eip_controller ? data.azurerm_public_ip.ctr_public_ip.fqdn : "no public dns for controller"
+  value = var.create_eip_controller ? "${vsphere_virtual_machine.controller.name}.${var.domain}" : "no public dns for controller"
 }
 
 /// workers
 output "workers_instance_id" {
-  value = [azurerm_linux_virtual_machine.workers.*.id]
+  value = [vsphere_virtual_machine.workers.*.id]
 }
 output "workers_private_ip" {
-  value = [azurerm_network_interface.workernics.*.private_ip_address]
+  value = [vsphere_virtual_machine.workers.*.default_ip_address]
 }
 output "workers_private_dns" {
-  value = [azurerm_network_interface.workernics.*.internal_domain_name_suffix]
-}
-data "azurerm_public_ip" "wrks_public_ip" {
-  count = var.worker_count
-  name                = azurerm_public_ip.workerspip[count.index].name
-  resource_group_name = azurerm_linux_virtual_machine.workers[count.index].resource_group_name
+  value = [vsphere_virtual_machine.workers.*.name]
 }
 output "workers_public_ip" {
-  value = [data.azurerm_public_ip.wrks_public_ip.*.ip_address]
+  value = [vsphere_virtual_machine.workers.*.default_ip_address]
 }
 output "worker_count" {
   value = [var.worker_count]
@@ -244,17 +230,17 @@ output "mapr_cluster_2_count" {
 # }
 
 output "controller_ssh_command" {
-  value = var.create_eip_controller ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ${var.user}@${data.azurerm_public_ip.ctr_public_ip.ip_address}" : "no public ip for controller"
+  value = var.create_eip_controller ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ${var.user}@${vsphere_virtual_machine.controller.default_ip_address}" : "no public ip for controller"
 }
 
 output "gateway_ssh_command" {
-  value = var.create_eip_gateway ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ${var.user}@${data.azurerm_public_ip.gtw_public_ip.ip_address}" : "no public ip for gateway"
+  value = var.create_eip_gateway ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ${var.user}@${vsphere_virtual_machine.gateway.default_ip_address}" : "no public ip for gateway"
 }
 
 output "workers_ssh" {
   value = {
-    for instance in data.azurerm_public_ip.wrks_public_ip:
-    instance.ip_address => "ssh -o StrictHostKeyChecking=no -i '${var.ssh_prv_key_path}' centos@${instance.fqdn}"
+    for instance in vsphere_virtual_machine.workers.*.default_ip_address:
+    instance => "ssh -o StrictHostKeyChecking=no -i '${var.ssh_prv_key_path}' centos@${instance}"
   }
 }
 
@@ -270,32 +256,32 @@ output "nfs_server_enabled" {
   value = var.nfs_server_enabled
 }
 output "nfs_server_instance_id" {
-  value = var.nfs_server_enabled ? azurerm_linux_virtual_machine.nfs_server[0].id : "nfs server not enabled"
+  value = var.nfs_server_enabled ? vsphere_virtual_machine.nfs_server.0.id : "nfs server not enabled"
 }
 output "nfs_server_private_ip" {
-  value = var.nfs_server_enabled ? azurerm_network_interface.nfs_servernic.private_ip_address : "nfs server not enabled"
+  value = var.nfs_server_enabled ? vsphere_virtual_machine.nfs_server.0.default_ip_address : "nfs server not enabled"
 }
 output "nfs_server_folder" {
   value = var.nfs_server_enabled ? "/nfsroot" : "nfs server not enabled"
 }
 output "nfs_server_ssh_command" {
-  value = var.nfs_server_enabled ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" centos@${data.azurerm_public_ip.nfs_public_ip.ip_address}" : "nfs server not enabled"
+  value = var.nfs_server_enabled ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" centos@${vsphere_virtual_machine.nfs_server.0.default_ip_address}" : "nfs server not enabled"
 }
 // AD Server Output
 output "ad_server_enabled" {
   value = var.ad_server_enabled
 }
 output "ad_server_instance_id" {
-  value = var.ad_server_enabled ? azurerm_linux_virtual_machine.ad_server[0].id : "ad server not enabled"
+  value = var.ad_server_enabled ? vsphere_virtual_machine.ad_server.0.id : "ad server not enabled"
 }
 output "ad_server_private_ip" {
-  value = var.ad_server_enabled ? azurerm_network_interface.ad_servernic.private_ip_address : "ad server not enabled"
+  value = var.ad_server_enabled ? vsphere_virtual_machine.ad_server.0.default_ip_address : "ad server not enabled"
 }
 output "ad_server_public_ip" {
-  value = var.ad_server_enabled ? data.azurerm_public_ip.ad_public_ip.ip_address : "ad server not enabled"
+  value = var.ad_server_enabled ? vsphere_virtual_machine.ad_server.0.default_ip_address : "ad server not enabled"
 }
 output "ad_server_ssh_command" {
-  value = var.ad_server_enabled ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" centos@${data.azurerm_public_ip.ad_public_ip.ip_address}" : "ad server not enabled"
+  value = var.ad_server_enabled ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" centos@${vsphere_virtual_machine.ad_server.0.default_ip_address}" : "ad server not enabled"
 }
 
 // RDP Server Output
@@ -303,22 +289,22 @@ output "rdp_server_enabled" {
   value = var.rdp_server_enabled
 }
 output "rdp_server_instance_id" {
-  value = var.rdp_server_enabled ? azurerm_linux_virtual_machine.rdp_server[0].id : "rdp server not enabled"
+  value = var.rdp_server_enabled ? vsphere_virtual_machine.rdp_server.0.id : "rdp server not enabled"
 }
 output "rdp_server_operating_system" {
   value = var.rdp_server_enabled ? var.rdp_server_operating_system : "rdp server not enabled"
 }
 output "rdp_server_public_ip" {
-  value = var.create_eip_rdp_linux_server ? data.azurerm_public_ip.rdp_public_ip.ip_address : "no public ip for rdp server"
+  value = var.create_eip_rdp_linux_server ? vsphere_virtual_machine.rdp_server.0.default_ip_address : "no public ip for rdp server"
 }
 output "rdp_public_dns_name" {
-    value = var.create_eip_rdp_linux_server ? "${var.project_id}.${var.region}.cloudapp.azure.com" : "no public dns for rdp server"
+    value = var.create_eip_rdp_linux_server ? "${var.project_id}.${var.domain}" : "no public dns for rdp server"
 }
 output "rdp_ssh_command" {
-  value = var.create_eip_rdp_linux_server ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ubuntu@${data.azurerm_public_ip.rdp_public_ip.fqdn}" : "no public ip for rdp server"
+  value = var.create_eip_rdp_linux_server ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ubuntu@${vsphere_virtual_machine.rdp_server.0.default_ip_address}" : "no public ip for rdp server"
 }
 output "rdp_server_private_ip" {
-    value = var.rdp_server_enabled ? azurerm_network_interface.rdp_servernic.private_ip_address : "rdp server not enabled"
+    value = var.rdp_server_enabled ? vsphere_virtual_machine.rdp_server.0.default_ip_address : "rdp server not enabled"
 }
 output "rdp_server_admin_password" {
   value = var.rdp_server_enabled ? random_password.rdp_admin_password.result : "rdp server not enabled"  

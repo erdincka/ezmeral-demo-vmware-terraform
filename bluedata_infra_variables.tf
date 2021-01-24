@@ -1,16 +1,27 @@
-variable datacenter { }
-variable datastore { }
-variable resource_pool { }
-variable network { }
+# vSphere settings
+variable vsphere_user { }
+variable vsphere_password { }
+variable vsphere_server { }
 
-variable "cloud_init_file" { default = "./etc/cloud-init.yaml" }
-variable "rdp_cloud_init_file" { default = "./etc/rdp-cloud-init.yaml" }
-variable "ad_cloud_init_file" { default = "./etc/ad-cloud-init.yaml" }
-variable "nfs_cloud_init_file" { default = "./etc/nfs-cloud-init.yaml" }
+variable vsphere_datacenter { }
+variable vsphere_cluster { }
+variable vsphere_datastore { }
+variable vsphere_resourcepool { }
+variable vsphere_network { }
+variable centos_iso_url { }
+variable timezone { }
+variable domain { }
+
+# Project settings
+# variable "cloud_init_file" { default = "./etc/cloud-init.yaml" }
+# variable "rdp_cloud_init_file" { default = "./etc/rdp-cloud-init.yaml" }
+# variable "ad_cloud_init_file" { default = "./etc/ad-cloud-init.yaml" }
+# variable "nfs_cloud_init_file" { default = "./etc/nfs-cloud-init.yaml" }
 variable "downstream_repo_dir" { default = "hcp-demo-env-aws-terraform" }
 
 variable "profile" { default = "default" } # kept for AWS script compatibility
 variable "az" { default = "none" } # kept for AWS script compatibility
+variable "region" { default = "none" } # kept for AWS script compatibility
 variable "project_id" { }
 variable "user" { default = "centos" }
 variable "client_cidr_block" { default = "none" }  # kept for AWS script compatibility
@@ -20,15 +31,15 @@ variable "vpc_cidr_block" { default = "10.1.0.0/16" }
 variable "subnet_cidr_block" { default = "10.1.1.0/24" }
 
 variable "create_eip_controller" { 
-  default = true
+  default = false
 }
 
 variable "create_eip_gateway" { 
-  default = true
+  default = false
 }
 
 variable "create_eip_rdp_linux_server" { 
-  default = true
+  default = false
 }
 
 ### TODO: Not implemented for Azure. Kept for AWS script compatibility
@@ -81,17 +92,22 @@ variable "gpu_worker_has_disk_for_df" {
   default = false
 } 
 
-variable "gtw_instance_type" { default = "Standard_B16ms" } ## 16c 64GB
-# variable "gtw_instance_type" { default = "Standard_B4ms" } ## 4c 16GB
-variable "ctr_instance_type" { default = "Standard_B16ms" } ## 16c 64GB
-# variable "ctr_instance_type" { default = "Standard_A8m_v2" } ## 8c 64GB
-variable "wkr_instance_type" { default = "Standard_B16ms" } ## 16c 64GB
-# variable "wkr_instance_type" { default = "Standard_A8m_v2" } ## 8c 64GB
-variable "nfs_instance_type" { default = "Standard_B1ms" } ## 1c 2GB
-variable "ad_instance_type" { default = "Standard_B1ms" } ## 1c 2GB
-variable "rdp_instance_type" { default = "Standard_B4ms" } ## 4c 16GB
-variable "mapr_instance_type" { default = "Standard_B16ms" } ## 16c 64GB
-# variable "mapr_instance_type" { default = "Standard_A4m_v2" } ## 4c 32GB
+variable gtw_instance_cpu { default = 16 }
+variable gtw_instance_memory { default = 16384 }
+variable ctr_instance_cpu { default = 16 }
+variable ctr_instance_memory { default = 65536 }
+variable wkr_instance_cpu { default = 16 }
+variable wkr_instance_memory { default = 16384 }
+variable rdp_instance_cpu { default = 16 }
+variable rdp_instance_memory { default = 16384 }
+variable ad_instance_cpu { default = 16 }
+variable ad_instance_memory { default = 16384 }
+variable nfs_instance_cpu { default = 16 }
+variable nfs_instance_memory { default = 16384 }
+variable mapr_instance_cpu { default = 16 }
+variable mapr_instance_memory { default = 16384 }
+variable gpu_instance_cpu { default = 16 }
+variable gpu_instance_memory { default = 16384 }
 
 variable "epic_dl_url" { }
 variable "epid_dl_url_needs_presign" { default = false }
@@ -108,7 +124,7 @@ variable "dns_zone_name" {
 
 variable "enable_route53_private_dns" { default = false }
 
-variable "rdp_server_enabled" { default = true }
+variable "rdp_server_enabled" { default = false }
 
 variable "rdp_server_operating_system" {
   type = string

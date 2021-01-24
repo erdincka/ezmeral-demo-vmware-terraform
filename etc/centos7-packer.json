@@ -1,0 +1,128 @@
+{
+  "variables": {
+    "name": "CentOS7",
+    "vsphere-server": "",
+    "vsphere-user": "",
+    "vsphere-password": "",
+    "vsphere-datacenter":"",
+    "vsphere-cluster":"",
+    "vsphere-resourcepool":"",
+    "vsphere-datastore": "",
+    "vsphere-network": "",
+    "ssh-prv-key": "",
+    "vm-name": "CentOS7-Template",
+    "vm-cpu-num": "2",
+    "vm-mem-size": "2048",
+    "vm-disk-size": "32768",
+    "guest-os-type": "centos7_64Guest",
+    "ssh-username": "root",
+    "iso-path": "",
+    "iso-url": "",
+    "iso-checksum": ""
+  },
+  
+  "builders": [
+    {
+      "type": "vsphere-iso",
+      "name": "{{user `name`}}",
+      "vcenter_server": "{{user `vsphere-server`}}",
+      "username": "{{user `vsphere-user`}}",
+      "password": "{{user `vsphere-password`}}",
+      "cluster": "{{user `vsphere-cluster`}}",
+      "datacenter": "{{user `vsphere-datacenter`}}",
+      "resource_pool": "{{user `vsphere-resourcepool`}}",
+      "datastore": "{{user `vsphere-datastore`}}",
+      "insecure_connection": "true",
+
+      "convert_to_template": "true",
+      "notes": "For Ezmeral Deployment",
+      "http_directory": "etc",
+      "iso_checksum": "{{user `iso-checksum`}}",
+      "iso_urls": [
+        "{{user `iso-path`}}",
+        "{{user `iso-url`}}"
+      ],
+      
+      "vm_name": "{{user `vm-name`}}",
+      "guest_os_type": "{{user `guest-os-type`}}",
+      "CPUs": "{{user `vm-cpu-num`}}",
+      "RAM": "{{user `vm-mem-size`}}",
+      "RAM_reserve_all": false,
+      "boot_wait": "5s",
+      "boot_command": [
+        "<tab> text ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ks.cfg <enter><wait>"
+      ],
+      "network_adapters": [
+        {
+          "network": "{{user `vsphere-network`}}",
+          "network_card": "vmxnet3"
+        }
+      ],
+      "shutdown_command": "sudo shutdown -P now",
+      "ssh_username": "{{user `ssh-username`}}",
+      "ssh_private_key_file": "{{user `ssh-prv-key`}}",
+      "ssh_pty": true,
+      "ssh_timeout": "35m",
+      "ssh_handshake_attempts": "150",
+      "storage": [
+        {
+          "disk_size": "{{user `vm-disk-size`}}",
+          "disk_thin_provisioned": true
+        }
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "inline": [
+        "/usr/bin/yum -y install epel-release",
+        "/usr/bin/yum -y install python-pip wget yum-utils",
+        "#/usr/bin/yum -y install bash-completion htop kernel-headers python3-pip vim bind-utils",
+        "#/usr/bin/yum -y update",
+        "#Cloud-init",
+        "/usr/bin/yum -y install cloud-init",
+        "#touch /etc/cloud/cloud-init.disabled",
+        "# curl -sSL https://raw.githubusercontent.com/vmware/cloud-init-vmware-guestinfo/master/install.sh | sh -",
+        "# yum install https://github.com/vmware/cloud-init-vmware-guestinfo/releases/download/v1.1.0/cloud-init-vmware-guestinfo-1.1.0-1.el7.noarch.rpm",
+        "# sudo",
+        "echo 'centos        ALL=(ALL)       NOPASSWD: ALL' >> /etc/sudoers.d/centos",
+        "/bin/sed -i 's/^.*requiretty/#Defaults requiretty/' /etc/sudoers",
+        "#stop logging services",
+        "/sbin/service rsyslog stop",
+        "/sbin/service auditd stop",
+        "#disable consistent network device naming",
+        "#/bin/ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules",
+        "#/bin/sed -i 's/rhgb quiet/net.ifnames=0 biosdevname=0 ipv6.disable=1/' /etc/default/grub",
+        "#/usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg",
+        "#/usr/sbin/grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg",
+        "#remove uuid from ifcfg scripts",
+        "/bin/sed -i '/^(HWADDR|UUID)=/d' /etc/sysconfig/network-scripts/ifcfg-en*",
+        "#remove old kernels",
+        "/usr/bin/package-cleanup --oldkernels --count=1",
+        "#clean yum cache",
+        "/usr/bin/yum clean all",
+        "#force logrotate to shrink logspace and remove old logs as well as truncate logs",
+        "/usr/sbin/logrotate -f /etc/logrotate.conf",
+        "/usr/bin/rm -f /var/log/*-???????? /var/log/*.gz",
+        "/usr/bin/rm -f /var/log/dmesg.old",
+        "/usr/bin/rm -rf /var/log/anaconda",
+        "/usr/bin/cat /dev/null > /var/log/audit/audit.log",
+        "/usr/bin/cat /dev/null > /var/log/wtmp",
+        "/usr/bin/cat /dev/null > /var/log/lastlog",
+        "/usr/bin/cat /dev/null > /var/log/grubby",
+        "#remove udev hardware rules",
+        "/usr/bin/rm -f /etc/udev/rules.d/70*",
+        "#remove SSH host keys",
+        "/usr/bin/rm -f /etc/ssh/*key*",
+        "#remove root users SSH history",
+        "/usr/bin/rm -rf /root/.ssh/",
+        "/usr/bin/rm -rf /root/anaconda-ks.cfg",
+        "/usr/bin/rm -rf /tmp/*",
+        "#remove root users shell history",
+        "/usr/bin/rm -f /root/.bash_history",
+        "unset HISTFILE"
+      ],
+      "type": "shell"
+    }
+  ]
+}

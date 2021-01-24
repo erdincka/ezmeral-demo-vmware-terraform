@@ -1,13 +1,9 @@
-datacenter      = "datacenter"
-datastore       = "datastore"
-resource_pool   = "resource_pool"
-network         = "network"
-
 #
 # Set this to something DNS/screen friendly
 # This will be used for external host and resource naming
 #
 project_id         = "ecp-demo"
+region             = "none"
 
 # you may need to change the instance types if
 # the defaults are not available in your region

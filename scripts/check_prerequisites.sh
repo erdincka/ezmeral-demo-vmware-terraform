@@ -22,8 +22,8 @@ check_command pip3
 check_command ssh-keygen
 check_command nc
 check_command curl
+check_command packer
 check_command terraform
-check_command az
 
 # New MacOS uses zsh
 if [ "/bin/zsh" == "$SHELL" ]; then
@@ -53,7 +53,7 @@ python3 -m ipcalc > /dev/null || {
     pip3 install --user ipcalc six
 }
 
-check_command hpecp > /dev/null || {
+command -v hpecp > /dev/null || {
     echo "Installing 'hpecp' python module."
     pip3 install --user --upgrade hpecp
 }

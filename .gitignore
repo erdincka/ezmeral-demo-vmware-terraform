@@ -1,1 +1,13 @@
-etc/my.tfvars
+# terraform generated
+.terraform*
+*.tfstate*
+
+# files with secrets
+etc/my_env.sh
+etc/ks.cfg
+etc/vmware.tfvars
+
+# output files
+packer_cache
+hcp-demo-env-aws-terraform
+generated

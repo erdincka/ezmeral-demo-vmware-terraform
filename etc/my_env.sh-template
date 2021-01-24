@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# Vmware settings
+vsphere_server=""
+vsphere_user=""
+vsphere_password=""
+vsphere_cluster=""
+vsphere_datacenter=""
+vsphere_resourcepool=""
+vsphere_datastore=""
+vsphere_network=""
+
+# CentOS ISO image settings
+centos_iso_url=""
+centos_iso_path=""
+centos_iso_checksum="sha256:xxxx"
+
+# Linux VM settings
+domain=""
+timezone="UTC"
+
+# Project settings
+epic_dl_url=""

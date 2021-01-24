@@ -2,7 +2,6 @@ provider "vsphere" {
   user           = var.vsphere_user
   password       = var.vsphere_password
   vsphere_server = var.vsphere_server
-
   # If you have a self-signed cert
   allow_unverified_ssl = true
 }
@@ -31,15 +30,38 @@ resource "local_file" "ca-key" {
 
 # Vsphere resources
 data "vsphere_datacenter" "dc" {
-  name = var.datacenter
+  name = var.vsphere_datacenter
 }
 
 data "vsphere_datastore" "datastore" {
-  name = var.datastore
+  name = var.vsphere_datastore
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
 data "vsphere_resource_pool" "pool" {
-  name = var.resource_pool
+  name = var.vsphere_resourcepool
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+
+data "vsphere_network" "network" {
+  name = var.vsphere_network
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+
+# Password generator
+resource "random_password" "rdp_admin_password" {
+  length = 16
+  special = true
+  override_special = "_%@"
+}
+
+data "vsphere_virtual_machine" "template" {
+  name          = "CentOS7-Template"
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+resource "vsphere_virtual_machine" "rdp_server" {
+  count         = var.rdp_server_enabled ? 1 : 0
+  name          = "dummy-resource"
+  resource_pool_id      = data.vsphere_resource_pool.pool.id
   datacenter_id = data.vsphere_datacenter.dc.id
 }
