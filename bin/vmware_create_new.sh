@@ -4,7 +4,7 @@ set -e # abort on error
 set -u # abort on undefined variable
 
 downstream_repodir="./hcp-demo-env-aws-terraform"
-downstream_repourl="git@github.com:hpe-container-platform-community/hcp-demo-env-aws-terraform"
+downstream_repourl="https://github.com/hpe-container-platform-community/hcp-demo-env-aws-terraform"
 
 [ -d ${downstream_repodir} ] || git clone "${downstream_repourl}" "${downstream_repodir}"
 ### Fix for VM disk naming
@@ -12,6 +12,8 @@ sed -i'' -e 's/nvme1n1/sdc/g' -e 's/nvme2n1/sdd/g' ${downstream_repodir}/bin/exp
 sed -i'' -e 's/nvme1n1/sdc/g' -e 's/nvme2n1/sdd/g' ${downstream_repodir}/bin/experimental/epic_workers_add.sh  
 # workaround for the script
 sed -i'' 's/apt/apt \-y/g' ${downstream_repodir}/modules/module-rdp-server-linux/ca-certs-setup.sh
+# don't require aws cli
+sed -i '/command -v aws/,+5d' ${downstream_repodir}/scripts/etc/check_prerequisites.sh
 
 source "${downstream_repodir}/scripts/functions.sh"
 ./scripts/check_prerequisites.sh # for Vmware

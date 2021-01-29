@@ -27,6 +27,7 @@ vSphere environment (tested with ESXi 7.0.1, VCSA 7.0.1)
   - Cluster
   - Resource Pool
 - DHCP should be enabled on the network and VMs should be accessible by your local machine
+- DHCP should register DNS resolution (or manually provide DNS resolution for allocated IPs)
   
 ### Update variables for your environment
 
