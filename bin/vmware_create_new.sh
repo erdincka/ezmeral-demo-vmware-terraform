@@ -13,7 +13,7 @@ sed -i'' -e 's/nvme1n1/sdc/g' -e 's/nvme2n1/sdd/g' ${downstream_repodir}/bin/exp
 # workaround for the script
 sed -i'' 's/apt/apt \-y/g' ${downstream_repodir}/modules/module-rdp-server-linux/ca-certs-setup.sh
 # don't require aws cli
-sed -i '/command -v aws/,+5d' ${downstream_repodir}/scripts/etc/check_prerequisites.sh
+sed -i '/command -v aws/,+5d' ${downstream_repodir}/scripts/check_prerequisites.sh
 
 source "${downstream_repodir}/scripts/functions.sh"
 ./scripts/check_prerequisites.sh # for Vmware
