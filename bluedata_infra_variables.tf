@@ -97,7 +97,7 @@ variable gtw_instance_memory { default = 16384 }
 variable ctr_instance_cpu { default = 16 }
 variable ctr_instance_memory { default = 65536 }
 variable wkr_instance_cpu { default = 16 }
-variable wkr_instance_memory { default = 16384 }
+variable wkr_instance_memory { default = 32768 }
 variable rdp_instance_cpu { default = 16 }
 variable rdp_instance_memory { default = 16384 }
 variable ad_instance_cpu { default = 16 }
@@ -105,9 +105,9 @@ variable ad_instance_memory { default = 16384 }
 variable nfs_instance_cpu { default = 16 }
 variable nfs_instance_memory { default = 16384 }
 variable mapr_instance_cpu { default = 16 }
-variable mapr_instance_memory { default = 16384 }
+variable mapr_instance_memory { default = 32768 }
 variable gpu_instance_cpu { default = 16 }
-variable gpu_instance_memory { default = 16384 }
+variable gpu_instance_memory { default = 32768 }
 
 variable "epic_dl_url" { }
 variable "epid_dl_url_needs_presign" { default = false }
