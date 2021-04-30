@@ -245,7 +245,9 @@ resource "local_file" "get_public_endpoints" {
   filename = "${path.module}/generated/get_public_endpoints.sh"
   content  = <<-EOF
     #!/usr/bin/env bash
-    az vm list -d -o table
-    ## TODO: better output and useful details
+    source ./hcp-demo-env-aws-terraform/scripts/variables.sh
+    echo "Controller: ${CTRL_PUB_IP}"
+    echo "Gateway: ${GATW_PUB_IP}"
+    echo "Workers: ${WRKR_PUB_IPS[@]}"
   EOF
 }

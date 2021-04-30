@@ -1,6 +1,6 @@
 # AD VM
 resource "vsphere_virtual_machine" "ad_server" {
-  name                  = "ad_server"
+  name                  = "ad"
   count                 = var.ad_server_enabled ? 1 : 0
   resource_pool_id      = data.vsphere_resource_pool.pool.id
   datastore_id          = data.vsphere_datastore.datastore.id
@@ -12,7 +12,7 @@ resource "vsphere_virtual_machine" "ad_server" {
     network_id = data.vsphere_network.network.id
   }
   disk {
-      label               = "ad_server-os-disk"
+      label               = "ad-os-disk"
       size                = "400"
       thin_provisioned    = true
   }
@@ -21,7 +21,7 @@ resource "vsphere_virtual_machine" "ad_server" {
     template_uuid = data.vsphere_virtual_machine.template.id
     customize {
       linux_options {
-        host_name = "ad_server"
+        host_name = "ad"
         domain = var.domain
         time_zone = var.timezone
       }
@@ -31,6 +31,11 @@ resource "vsphere_virtual_machine" "ad_server" {
   provisioner "file" {
     source      = "${var.downstream_repo_dir}/modules/module-ad-server/files/"
     destination = "/home/centos"
+    connection {
+      host     = self.default_ip_address
+      user     = var.user
+      private_key = file(var.ssh_prv_key_path)
+    }
   }
   provisioner "remote-exec" {
     inline = [

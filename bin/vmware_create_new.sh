@@ -73,6 +73,9 @@ print_header "Starting to create infrastructure with Terraform"
 #    fi
 # fi
 
+[ -f .terraform.lock.hcl ] || terraform init
+[ -f ./bluedata_infra_variables.tf ] || ln -s ./hcp-demo-env-aws-terraform/bluedata_infra_variables.tf .
+
 eval "terraform apply -var-file=./etc/bluedata_infra.tfvars \
   -var 'vsphere_server=${vsphere_server}' \
   -var 'vsphere_user=${vsphere_user}' \
@@ -91,8 +94,8 @@ eval "terraform apply -var-file=./etc/bluedata_infra.tfvars \
 print_header "Output saved to generated/output.json"
 terraform output -json > "./generated/output.json"
 
-echo "Sleeping for 120s to give services a chance to finalize"
-sleep 120
+# echo "Sleeping for 120s to give services a chance to finalize"
+# sleep 120
 
 # Now we switch to AWS repo
 pushd ${downstream_repodir}
@@ -104,18 +107,18 @@ print_header "Running ./scripts/post_refresh_or_apply.sh"
 print_header "Installing HCP"
 ./scripts/bluedata_install.sh
 
-# print_header "Installing HPECP CLI on Controller"
-# ./bin/experimental/install_hpecp_cli.sh 
+print_header "Installing HPECP CLI on Controller"
+./bin/experimental/install_hpecp_cli.sh 
 
-# ### OPTIONAL: enable for initial env creation
-# # mv "./etc/postcreate.sh_template" "./etc/postcreate.sh"
+### OPTIONAL: enable for initial env creation
+# mv "./etc/postcreate.sh_template" "./etc/postcreate.sh"
 
-# if [[ -f "./etc/postcreate.sh" ]]; then
-#    print_header "Found ./etc/postcreate.sh so executing it"
-#    ./etc/postcreate.sh
-# else
-#    print_header "./etc/postcreate.sh not found - skipping."
-# fi
+if [[ -f "./etc/postcreate.sh" ]]; then
+   print_header "Found ./etc/postcreate.sh so executing it"
+   ./etc/postcreate.sh
+else
+   print_header "./etc/postcreate.sh not found - skipping."
+fi
 
 source "./scripts/variables.sh"
 if [[ "$RDP_SERVER_ENABLED" == True && "$RDP_SERVER_OPERATING_SYSTEM" == "LINUX" ]]; then

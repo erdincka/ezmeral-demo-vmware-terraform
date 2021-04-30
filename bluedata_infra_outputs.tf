@@ -1,8 +1,3 @@
-# outputs
-
-# Using workaround for getting public IPs, it cannot be read before attaching to an online VM 
-# https://github.com/terraform-providers/terraform-provider-azurerm/issues/764#issuecomment-365019882
-
 ## From AWS scripts
 output "project_dir" {
   value = abspath(path.module)
@@ -10,6 +5,10 @@ output "project_dir" {
 
 output "user" {
   value = var.user
+}
+
+output "project_id" {
+  value = var.project_id
 }
 
 output "aws_profile" {
@@ -27,11 +26,6 @@ output "subnet_cidr_block" {
 output "vpc_cidr_block" {
   value = var.vpc_cidr_block
 }
-
-## Not used in Azure
-# output "deployment_uuid" {
-#   value = random_uuid.deployment_uuid.result
-# }
 
 output "selinux_disabled" {
   value = var.selinux_disabled
@@ -101,10 +95,12 @@ output "gateway_private_ip" {
     value = vsphere_virtual_machine.gateway.default_ip_address
 }
 output "gateway_public_ip" {
-  value = var.create_eip_gateway ? vsphere_virtual_machine.gateway.default_ip_address : "no public ip for gateway"
+  value = vsphere_virtual_machine.gateway.default_ip_address
+  # value = var.create_eip_gateway ? vsphere_virtual_machine.gateway.default_ip_address : "no public ip for gateway"
 }
 output "gateway_public_dns" {
-    value = var.create_eip_gateway ? "${var.project_id}.${var.domain}" : "no public dns for gateway"
+    value = "${var.project_id}.${var.domain}"
+    # value = var.create_eip_gateway ? "${var.project_id}.${var.domain}" : "no public dns for gateway"
 }
 output "gateway_private_dns" {
   value = "${var.project_id}.${var.domain}"
@@ -123,11 +119,11 @@ output "controller_private_dns" {
 output "controller_public_ip" {
   value = vsphere_virtual_machine.controller.default_ip_address
 }
-# output "controller_public_url" {
-#   value = var.create_eip_controller ? "https://${data.azurerm_public_ip.ctr_public_ip.fqdn}" : "no public ip for controller"
-# }
+output "controller_public_url" {
+  value = "https://${vsphere_virtual_machine.controller.name}.${var.domain}"
+}
 output "controller_public_dns" {
-  value = var.create_eip_controller ? "${vsphere_virtual_machine.controller.name}.${var.domain}" : "no public dns for controller"
+  value = "${vsphere_virtual_machine.controller.name}.${var.domain}"
 }
 
 /// workers
@@ -145,6 +141,10 @@ output "workers_public_ip" {
 }
 output "worker_count" {
   value = [var.worker_count]
+}
+
+output "embedded_df" {
+  value = var.embedded_df
 }
 
 ### TODO: Not implemented
@@ -230,11 +230,11 @@ output "mapr_cluster_2_count" {
 # }
 
 output "controller_ssh_command" {
-  value = var.create_eip_controller ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ${var.user}@${vsphere_virtual_machine.controller.default_ip_address}" : "no public ip for controller"
+  value = "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ${var.user}@${vsphere_virtual_machine.controller.default_ip_address}" 
 }
 
 output "gateway_ssh_command" {
-  value = var.create_eip_gateway ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ${var.user}@${vsphere_virtual_machine.gateway.default_ip_address}" : "no public ip for gateway"
+  value = "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ${var.user}@${vsphere_virtual_machine.gateway.default_ip_address}"
 }
 
 output "workers_ssh" {
@@ -284,6 +284,14 @@ output "ad_server_ssh_command" {
   value = var.ad_server_enabled ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" centos@${vsphere_virtual_machine.ad_server.0.default_ip_address}" : "ad server not enabled"
 }
 
+output "ad_admin_group" {
+  value = var.ad_admin_group
+}
+
+output "ad_member_group" {
+  value = var.ad_member_group
+}
+
 // RDP Server Output
 output "rdp_server_enabled" {
   value = var.rdp_server_enabled
@@ -295,13 +303,13 @@ output "rdp_server_operating_system" {
   value = var.rdp_server_enabled ? var.rdp_server_operating_system : "rdp server not enabled"
 }
 output "rdp_server_public_ip" {
-  value = var.create_eip_rdp_linux_server ? vsphere_virtual_machine.rdp_server.0.default_ip_address : "no public ip for rdp server"
+  value = var.rdp_server_enabled ? vsphere_virtual_machine.rdp_server.0.default_ip_address : "rdp server not enabled"
 }
 output "rdp_public_dns_name" {
-    value = var.create_eip_rdp_linux_server ? "${var.project_id}.${var.domain}" : "no public dns for rdp server"
+    value = "${var.project_id}.${var.domain}"
 }
 output "rdp_ssh_command" {
-  value = var.create_eip_rdp_linux_server ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ubuntu@${vsphere_virtual_machine.rdp_server.0.default_ip_address}" : "no public ip for rdp server"
+  value = var.rdp_server_enabled ? "ssh -o StrictHostKeyChecking=no -i \"${var.ssh_prv_key_path}\" ubuntu@${vsphere_virtual_machine.rdp_server.0.default_ip_address}" : "rdp server not enabled"
 }
 output "rdp_server_private_ip" {
     value = var.rdp_server_enabled ? vsphere_virtual_machine.rdp_server.0.default_ip_address : "rdp server not enabled"
