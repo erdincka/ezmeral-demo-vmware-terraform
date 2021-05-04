@@ -246,8 +246,6 @@ resource "local_file" "get_public_endpoints" {
   content  = <<-EOF
     #!/usr/bin/env bash
     source ./hcp-demo-env-aws-terraform/scripts/variables.sh
-    echo "Controller: ${CTRL_PUB_IP}"
-    echo "Gateway: ${GATW_PUB_IP}"
-    echo "Workers: ${WRKR_PUB_IPS[@]}"
+    ### TODO: add output
   EOF
 }

@@ -13,7 +13,7 @@ resource "vsphere_virtual_machine" "workers" {
   }
   disk {
       label               = "worker${count.index + 1}-os-disk"
-      size                = "512"
+      size                = "400"
       thin_provisioned    = true
   }
   # clone from template
@@ -31,12 +31,12 @@ resource "vsphere_virtual_machine" "workers" {
   /********** Data Disks **********/
   disk {
     label               = "worker${count.index + 1}-disk1"
-    size                = 512
+    size                = 1024
     unit_number         = 1
   }
   disk {
     label               = "worker${count.index + 1}-disk2"
-    size                = 512
+    size                = 1024
     unit_number         = 2
   }
   provisioner "remote-exec" {

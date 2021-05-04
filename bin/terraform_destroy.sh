@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -eu
 
 downstream_repodir="./hcp-demo-env-aws-terraform"
 source ./etc/my_env.sh
@@ -24,3 +25,6 @@ eval "terraform destroy \
 # clean up
 rm -r "./generated"
 [ -d ${downstream_repodir} ] && rm -r "${downstream_repodir}"
+
+echo "Please remove the template VM from vCenter!"
+

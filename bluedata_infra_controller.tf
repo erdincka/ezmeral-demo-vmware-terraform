@@ -13,7 +13,7 @@ resource "vsphere_virtual_machine" "controller" {
   }
   disk {
       label               = "controller-os-disk"
-      size                = "512"
+      size                = "400"
       thin_provisioned    = true
   }
   # clone from template
