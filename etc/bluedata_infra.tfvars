@@ -9,6 +9,7 @@ embedded_df = true
 epic_options = "--skipeula --default-password admin123" 
 epic_dl_url = ""
 epid_dl_url_needs_presign = false
+worker_count = 3
 
 ### For AWS script compatibility
 az = "null"
