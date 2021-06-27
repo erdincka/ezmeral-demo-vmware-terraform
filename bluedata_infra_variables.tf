@@ -7,7 +7,6 @@ variable "check_client_ip" { default = "true" }
 variable "additional_client_ip_list" { default = [] }
 variable "vpc_cidr_block" { }
 variable "subnet_cidr_block" { }
-variable "additional_client_ip_list" { default = [] }
 
 variable "create_iam_user" { default = "false" }
 
