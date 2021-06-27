@@ -11,7 +11,7 @@ downstream_repourl="https://github.com/hpe-container-platform-community/hcp-demo
 sed -i'' -e 's/nvme1n1/sdb/g' -e 's/nvme2n1/sdc/g' ${downstream_repodir}/bin/experimental/03_k8sworkers_add.sh
 sed -i'' -e 's/nvme1n1/sdb/g' -e 's/nvme2n1/sdc/g' ${downstream_repodir}/bin/experimental/epic_workers_add.sh  
 # workaround for the script
-sed -i'' 's/apt/apt \-y/g' ${downstream_repodir}/modules/module-rdp-server-linux/ca-certs-setup.sh
+# sed -i'' 's/apt/apt \-y/g' ${downstream_repodir}/modules/module-rdp-server-linux/ca-certs-setup.sh
 # don't require aws cli
 sed -i '/command -v aws/,+5d' ${downstream_repodir}/scripts/check_prerequisites.sh
 
