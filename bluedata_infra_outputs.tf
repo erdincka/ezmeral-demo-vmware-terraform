@@ -3,6 +3,10 @@ output "project_dir" {
   value = abspath(path.module)
 }
 
+output "additional_client_ip_list" {
+  value = var.additional_client_ip_list
+}
+
 output "user" {
   value = var.user
 }

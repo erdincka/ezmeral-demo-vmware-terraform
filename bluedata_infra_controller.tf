@@ -1,6 +1,6 @@
 # Controller VM
 resource "vsphere_virtual_machine" "controller" {
-  name                  = "controller"
+  name                  = "${var.project_id}-ctrl"
   resource_pool_id      = data.vsphere_resource_pool.pool.id
   # custom_data           = base64encode(file(pathexpand(var.cloud_init_file)))
   datastore_id          = data.vsphere_datastore.datastore.id
@@ -12,7 +12,7 @@ resource "vsphere_virtual_machine" "controller" {
     network_id = data.vsphere_network.network.id
   }
   disk {
-      label               = "controller-os-disk"
+      label               = "${var.project_id}-ctrl-os-disk"
       size                = "400"
       thin_provisioned    = true
   }
@@ -21,7 +21,7 @@ resource "vsphere_virtual_machine" "controller" {
     template_uuid = data.vsphere_virtual_machine.template.id
     customize {
       linux_options {
-        host_name = "controller"
+        host_name = "${var.project_id}-ctrl"
         domain = var.domain
         time_zone = var.timezone
       }
@@ -30,19 +30,19 @@ resource "vsphere_virtual_machine" "controller" {
   }
   /********** Data Disks **********/
   disk {
-    label               = "controller-disk1"
+    label               = "${var.project_id}-ctrl-disk1"
     size                = 512
     unit_number         = 1
   }
   disk {
-    label               = "controller-disk2"
+    label               = "${var.project_id}-ctrl-disk2"
     size                = 512
     unit_number         = 2
   }
   provisioner "remote-exec" {
     inline = [
       "sudo yum install -y -q cloud-utils-growpart",
-      "sudo growpart /dev/sda 2",
+      "sudo growpart /dev/sda 3",
       "sudo xfs_growfs /"
     ]
     connection {

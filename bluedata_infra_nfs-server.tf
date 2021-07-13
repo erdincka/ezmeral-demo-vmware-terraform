@@ -1,6 +1,6 @@
 # NFS VM
 resource "vsphere_virtual_machine" "nfs_server" {
-  name                  = "nfs_server"
+  name                  = "${var.project_id}-nfs"
   count                 = var.nfs_server_enabled ? 1 : 0
   resource_pool_id      = data.vsphere_resource_pool.pool.id
   datastore_id          = data.vsphere_datastore.datastore.id
@@ -12,7 +12,7 @@ resource "vsphere_virtual_machine" "nfs_server" {
     network_id = data.vsphere_network.network.id
   }
   disk {
-      label               = "nfs_server-os-disk"
+      label               = "${var.project_id}-nfs-os-disk"
       size                = "400"
       thin_provisioned    = true
   }
@@ -21,7 +21,7 @@ resource "vsphere_virtual_machine" "nfs_server" {
     template_uuid = data.vsphere_virtual_machine.template.id
     customize {
       linux_options {
-        host_name = "nfs_server"
+        host_name = "${var.project_id}-nfs"
         domain = var.domain
         time_zone = var.timezone
       }
@@ -31,7 +31,7 @@ resource "vsphere_virtual_machine" "nfs_server" {
   provisioner "remote-exec" {
     inline = [
       "sudo yum install -y -q cloud-utils-growpart",
-      "sudo growpart /dev/sda 2",
+      "sudo growpart /dev/sda 3",
       "sudo xfs_growfs /",
       "sudo yum update -y -q",
       "sudo yum -y -q install nfs-utils",

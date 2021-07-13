@@ -37,7 +37,7 @@ resource "local_file" "ssh_ad" {
 resource "local_file" "ssh_worker" {
   count = var.worker_count
 
-  filename = "${path.module}/generated/ssh_worker_${count.index}.sh"
+  filename = "${path.module}/generated/ssh_worker_${count.index + 1}.sh"
   content = <<-EOF
      #!/bin/bash
      source "${path.module}/${var.downstream_repo_dir}/scripts/variables.sh"

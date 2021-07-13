@@ -1,6 +1,6 @@
 # AD VM
 resource "vsphere_virtual_machine" "ad_server" {
-  name                  = "ad"
+  name                  = "${var.project_id}-ad"
   count                 = var.ad_server_enabled ? 1 : 0
   resource_pool_id      = data.vsphere_resource_pool.pool.id
   datastore_id          = data.vsphere_datastore.datastore.id
@@ -12,7 +12,7 @@ resource "vsphere_virtual_machine" "ad_server" {
     network_id = data.vsphere_network.network.id
   }
   disk {
-      label               = "ad-os-disk"
+      label               = "${var.project_id}-ad-os-disk"
       size                = "400"
       thin_provisioned    = true
   }
@@ -21,7 +21,7 @@ resource "vsphere_virtual_machine" "ad_server" {
     template_uuid = data.vsphere_virtual_machine.template.id
     customize {
       linux_options {
-        host_name = "ad"
+        host_name = "${var.project_id}-ad"
         domain = var.domain
         time_zone = var.timezone
       }

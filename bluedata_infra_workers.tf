@@ -1,7 +1,7 @@
 # Worker VMs
 resource "vsphere_virtual_machine" "workers" {
   count                 = var.worker_count
-  name                  = "worker${count.index + 1}"
+  name                  = "${var.project_id}-worker${count.index + 1}"
   resource_pool_id      = data.vsphere_resource_pool.pool.id
   datastore_id          = data.vsphere_datastore.datastore.id
   num_cpus              = var.wkr_instance_cpu
@@ -12,7 +12,7 @@ resource "vsphere_virtual_machine" "workers" {
     network_id = data.vsphere_network.network.id
   }
   disk {
-      label               = "worker${count.index + 1}-os-disk"
+      label               = "${var.project_id}-worker${count.index + 1}-os-disk"
       size                = "400"
       thin_provisioned    = true
   }
@@ -21,7 +21,7 @@ resource "vsphere_virtual_machine" "workers" {
     template_uuid = data.vsphere_virtual_machine.template.id
     customize {
       linux_options {
-        host_name = "worker${count.index + 1}"
+        host_name = "${var.project_id}-worker${count.index + 1}"
         domain = var.domain
         time_zone = var.timezone
       }
@@ -30,19 +30,19 @@ resource "vsphere_virtual_machine" "workers" {
   }
   /********** Data Disks **********/
   disk {
-    label               = "worker${count.index + 1}-disk1"
+    label               = "${var.project_id}-worker${count.index + 1}-disk1"
     size                = 1024
     unit_number         = 1
   }
   disk {
-    label               = "worker${count.index + 1}-disk2"
+    label               = "${var.project_id}-worker${count.index + 1}-disk2"
     size                = 1024
     unit_number         = 2
   }
   provisioner "remote-exec" {
     inline = [
       "sudo yum install -y -q cloud-utils-growpart",
-      "sudo growpart /dev/sda 2",
+      "sudo growpart /dev/sda 3",
       "sudo xfs_growfs /"
     ]
     connection {

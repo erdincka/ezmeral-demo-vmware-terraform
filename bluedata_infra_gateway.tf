@@ -1,6 +1,6 @@
 # Gateway VM
 resource "vsphere_virtual_machine" "gateway" {
-  name                  = "gateway"
+  name                  = "${var.project_id}-gateway"
   resource_pool_id      = data.vsphere_resource_pool.pool.id
   datastore_id          = data.vsphere_datastore.datastore.id
   num_cpus              = var.gtw_instance_cpu
@@ -11,7 +11,7 @@ resource "vsphere_virtual_machine" "gateway" {
     network_id = data.vsphere_network.network.id
   }
   disk {
-      label               = "gateway-os-disk"
+      label               = "${var.project_id}-gateway-os-disk"
       size                = "400"
       thin_provisioned    = true
   }
@@ -30,7 +30,7 @@ resource "vsphere_virtual_machine" "gateway" {
   provisioner "remote-exec" {
     inline = [
       "sudo yum install -y -q cloud-utils-growpart",
-      "sudo growpart /dev/sda 2",
+      "sudo growpart /dev/sda 3",
       "sudo xfs_growfs /"
     ]
     connection {
