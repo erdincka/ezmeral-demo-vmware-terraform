@@ -1,5 +1,9 @@
 # ECP Vmware-Terraform
 
+
+## No longer maintained, replaced with [Ezdemo](https://github.com/HewlettPackard/ezdemo)
+
+
 ## Overview
 
 ### Setup HPE Ezmeral Container Platform (ECP) demo environment on Vmware vSphere with Terraform
